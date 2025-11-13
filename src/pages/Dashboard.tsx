@@ -125,6 +125,10 @@ export default function Dashboard() {
             change={kpis.mrrChange}
             icon={DollarSign}
             trend={kpis.mrrChange > 0 ? 'up' : kpis.mrrChange < 0 ? 'down' : 'neutral'}
+            tooltipContent={{
+              description: "Monthly Recurring Revenue - the predictable revenue your business generates each month from subscriptions.",
+              formula: "Total Monthly Subscription Revenue"
+            }}
           />
           <KPICard
             title="CAC"
@@ -132,6 +136,10 @@ export default function Dashboard() {
             change={kpis.cacChange}
             icon={Users}
             trend={kpis.cacChange < 0 ? 'up' : kpis.cacChange > 0 ? 'down' : 'neutral'}
+            tooltipContent={{
+              description: "Customer Acquisition Cost - the average cost to acquire a new customer. Lower is better.",
+              formula: "Operating Expenses / Customer Count"
+            }}
           />
           <KPICard
             title="Churn Rate"
@@ -139,6 +147,10 @@ export default function Dashboard() {
             change={kpis.churnChange}
             icon={TrendingDown}
             trend={kpis.churnChange < 0 ? 'up' : kpis.churnChange > 0 ? 'down' : 'neutral'}
+            tooltipContent={{
+              description: "The percentage of customers who stop their subscription. A lower churn rate indicates better customer retention.",
+              formula: "Churned Customers / Total Customers × 100"
+            }}
           />
           <KPICard
             title="Burn Rate"
@@ -146,12 +158,20 @@ export default function Dashboard() {
             change={kpis.burnRateChange}
             icon={TrendingDown}
             trend={kpis.burnRateChange < 0 ? 'up' : kpis.burnRateChange > 0 ? 'down' : 'neutral'}
+            tooltipContent={{
+              description: "Net Burn Rate - how much cash you're spending per month after accounting for revenue. Lower burn = longer runway.",
+              formula: "Cash Out - Cash In"
+            }}
           />
           <KPICard
             title="Runway"
             value={`${kpis.runwayMonths.toFixed(1)} mo`}
             icon={Gauge}
             trend={kpis.runwayMonths > 6 ? 'up' : kpis.runwayMonths < 3 ? 'down' : 'neutral'}
+            tooltipContent={{
+              description: "How many months your business can operate before running out of cash at the current burn rate.",
+              formula: "Cash Balance / Average Monthly Burn Rate"
+            }}
           />
           <KPICard
             title="LTV/CAC"
@@ -159,6 +179,10 @@ export default function Dashboard() {
             change={kpis.ltvCacChange}
             icon={Ratio}
             trend={kpis.ltvCacRatio > 3 ? 'up' : kpis.ltvCacRatio < 2 ? 'down' : 'neutral'}
+            tooltipContent={{
+              description: "Lifetime Value to Customer Acquisition Cost ratio. A ratio > 3 indicates a healthy business model.",
+              formula: "Customer Lifetime Value / CAC"
+            }}
           />
           <KPICard
             title="ARPU"
@@ -166,6 +190,10 @@ export default function Dashboard() {
             change={kpis.arpuChange}
             icon={UserCircle}
             trend={kpis.arpuChange > 0 ? 'up' : kpis.arpuChange < 0 ? 'down' : 'neutral'}
+            tooltipContent={{
+              description: "Average Revenue Per User - the average monthly revenue generated per customer. Higher ARPU means more revenue from each customer.",
+              formula: "MRR / Total Customers"
+            }}
           />
         </div>
 

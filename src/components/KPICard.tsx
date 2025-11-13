@@ -1,6 +1,7 @@
 import { LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { ArrowUp, ArrowDown, Minus } from "lucide-react";
+import { ArrowUp, ArrowDown, Minus, HelpCircle } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface KPICardProps {
   title: string;
@@ -8,9 +9,13 @@ interface KPICardProps {
   change?: number;
   icon: LucideIcon;
   trend?: 'up' | 'down' | 'neutral';
+  tooltipContent?: {
+    description: string;
+    formula: string;
+  };
 }
 
-export const KPICard = ({ title, value, change, icon: Icon, trend }: KPICardProps) => {
+export const KPICard = ({ title, value, change, icon: Icon, trend, tooltipContent }: KPICardProps) => {
   const getTrendColor = () => {
     if (trend === 'up') return 'text-success';
     if (trend === 'down') return 'text-destructive';
@@ -33,6 +38,23 @@ export const KPICard = ({ title, value, change, icon: Icon, trend }: KPICardProp
               <p className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
                 {title}
               </p>
+              {tooltipContent && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button className="ml-1">
+                        <HelpCircle className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground transition-colors" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      <div className="space-y-2">
+                        <p className="text-sm">{tooltipContent.description}</p>
+                        <p className="text-xs text-muted-foreground font-mono">{tooltipContent.formula}</p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </div>
             <p className="text-3xl font-bold tracking-tight">{value}</p>
             {change !== undefined && (
