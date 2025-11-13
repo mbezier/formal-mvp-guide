@@ -21,7 +21,8 @@ serve(async (req) => {
     const systemPrompt = `You are a financial analyst specialized in SaaS metrics. 
 Generate 3-4 concise, actionable insights based on the provided KPI data.
 Each insight should be specific, data-driven, and provide clear recommendations.
-Format each insight as a short paragraph (2-3 sentences max).`;
+Format each insight as a short paragraph (2-3 sentences max).
+Do not use markdown formatting like ** or __. Write in plain text only.`;
 
     const userPrompt = `Analyze these SaaS KPIs and provide insights:
 
