@@ -4,6 +4,7 @@ import { DollarSign, Users, TrendingDown, Gauge, Ratio, UserCircle, FileDown, Ar
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { KPICard } from "@/components/KPICard";
+import { AIInsights } from "@/components/AIInsights";
 import { FinancialData, KPIMetrics, calculateKPIs } from "@/lib/excel-utils";
 import { exportToPDF } from "@/lib/pdf-export";
 import { useToast } from "@/hooks/use-toast";
@@ -115,6 +116,11 @@ export default function Dashboard() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
           <p className="text-muted-foreground">Key performance indicators for your SaaS business</p>
+        </div>
+
+        {/* AI Insights */}
+        <div className="mb-8">
+          <AIInsights kpis={kpis} />
         </div>
 
         {/* KPI Cards Grid */}

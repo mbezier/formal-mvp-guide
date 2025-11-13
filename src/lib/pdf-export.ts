@@ -53,8 +53,11 @@ export const exportToPDF = async (kpis: KPIMetrics, companyName: string = 'Your 
     
     if (metric.change !== 0) {
       const changeText = `${metric.change > 0 ? '+' : ''}${metric.change.toFixed(1)}%`;
-      const changeColor = metric.change > 0 ? [16, 185, 129] : [239, 68, 68];
-      pdf.setTextColor(...changeColor);
+      if (metric.change > 0) {
+        pdf.setTextColor(16, 185, 129);
+      } else {
+        pdf.setTextColor(239, 68, 68);
+      }
       pdf.text(changeText, 160, yPos);
       pdf.setTextColor(0, 0, 0);
     }
