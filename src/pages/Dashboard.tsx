@@ -65,11 +65,14 @@ export default function Dashboard() {
   }
 
   // Prepare chart data
-  const chartData = data.map((item) => ({
-    month: new Date(item.date).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }),
-    mrr: item.revenue,
-    burn: item.cashOut - item.cashIn,
-  }));
+  const chartData = data.map((item) => {
+    const date = new Date(item.date);
+    return {
+      month: `${date.toLocaleDateString('en-US', { month: 'short' })} ${date.getFullYear().toString().slice(-2)}`,
+      mrr: item.revenue,
+      burn: item.cashOut - item.cashIn,
+    };
+  });
 
   return (
     <div className="min-h-screen bg-background">
