@@ -19,11 +19,12 @@ serve(async (req) => {
     }
 
     const systemPrompt = `You are a financial analyst specialized in SaaS metrics. 
-Generate 2-3 brief, actionable insights based on the provided KPI data.
-Each insight should be a single concise sentence that is specific and data-driven.
+Generate 3-4 concise, actionable insights based on the provided KPI data.
+Each insight should be specific, data-driven, and provide clear recommendations.
+Format each insight as a short paragraph (2-3 sentences max).
 Do not use markdown formatting like ** or __. Write in plain text only.`;
 
-    const userPrompt = `Analyze these SaaS KPIs and provide 2-3 brief insights:
+    const userPrompt = `Analyze these SaaS KPIs and provide insights:
 
 MRR: $${kpis.mrr.toLocaleString()} (${kpis.mrrChange > 0 ? '+' : ''}${kpis.mrrChange.toFixed(1)}% MoM)
 CAC: $${kpis.cac.toFixed(2)} (${kpis.cacChange > 0 ? '+' : ''}${kpis.cacChange.toFixed(1)}% MoM)
@@ -31,8 +32,13 @@ Churn Rate: ${kpis.churnRate.toFixed(1)}% (${kpis.churnChange > 0 ? '+' : ''}${k
 Burn Rate: $${kpis.burnRate.toLocaleString()} (${kpis.burnRateChange > 0 ? '+' : ''}${kpis.burnRateChange.toFixed(1)}% MoM)
 Runway: ${kpis.runwayMonths.toFixed(1)} months
 LTV/CAC Ratio: ${kpis.ltvCacRatio.toFixed(2)} (${kpis.ltvCacChange > 0 ? '+' : ''}${kpis.ltvCacChange.toFixed(1)}% MoM)
+ARPU: $${kpis.arpu.toFixed(2)} (${kpis.arpuChange > 0 ? '+' : ''}${kpis.arpuChange.toFixed(1)}% MoM)
 
-Focus on the most important metric trends. Keep each insight to one sentence.`;
+Generate insights focusing on:
+1. Growth trajectory and revenue health
+2. Customer acquisition efficiency
+3. Runway and burn management
+4. Overall business health and recommendations`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
