@@ -66,7 +66,20 @@ export default function Dashboard() {
 
   // Prepare chart data
   const chartData = data.map((item) => {
-    const date = new Date(item.date);
+    // Excel dates might be serial numbers, strings, or Date objects
+    let date: Date;
+    if (typeof item.date === 'number') {
+      // Excel serial date number (days since 1900-01-01)
+      date = new Date((item.date - 25569) * 86400 * 1000);
+    } else {
+      date = new Date(item.date);
+    }
+    
+    // Ensure we have a valid date
+    if (isNaN(date.getTime())) {
+      date = new Date();
+    }
+    
     return {
       month: `${date.toLocaleDateString('en-US', { month: 'short' })} ${date.getFullYear().toString().slice(-2)}`,
       mrr: item.revenue,
