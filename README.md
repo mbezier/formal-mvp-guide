@@ -1,4 +1,13 @@
-# Welcome to your Lovable project
+# FinArrow – MVP
+
+FinArrow transforms messy financial spreadsheets into investor-ready dashboards in seconds.
+
+Features:
+- Upload Excel file → auto-generated SaaS KPIs
+- AI insights on MRR, churn, CAC, burn, runway
+- Exportable investor-grade PDF dashboard
+
+Live demo: https://formal-mvp-guide.lovable.app
 
 ## Project info
 
