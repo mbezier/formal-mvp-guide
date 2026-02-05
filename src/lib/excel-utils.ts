@@ -1,5 +1,11 @@
 import * as XLSX from 'xlsx';
 
+// Validation constants
+const MAX_ROWS = 1000;
+const MAX_NUMBER_VALUE = 1e12;
+const MIN_NUMBER_VALUE = -1e12;
+const MAX_DATE_STRING_LENGTH = 50;
+
 export interface FinancialData {
   date: string;
   revenue: number;
@@ -28,6 +34,61 @@ export interface KPIMetrics {
   arpuChange: number;
 }
 
+// Validation helper functions
+const validateNumber = (val: any, fieldName: string, min = MIN_NUMBER_VALUE, max = MAX_NUMBER_VALUE, allowZero = true): number => {
+  if (val === undefined || val === null || val === '') {
+    if (allowZero) return 0;
+    throw new Error(`${fieldName} is required`);
+  }
+  
+  const num = parseFloat(String(val));
+  
+  if (isNaN(num) || !isFinite(num)) {
+    throw new Error(`Invalid ${fieldName}: must be a valid number`);
+  }
+  
+  if (num < min || num > max) {
+    throw new Error(`Invalid ${fieldName}: value must be between ${min.toLocaleString()} and ${max.toLocaleString()}`);
+  }
+  
+  return num;
+};
+
+const validatePositiveNumber = (val: any, fieldName: string, max = MAX_NUMBER_VALUE): number => {
+  return validateNumber(val, fieldName, 0, max, true);
+};
+
+const validatePercentage = (val: any, fieldName: string): number => {
+  return validateNumber(val, fieldName, 0, 100, true);
+};
+
+const validateDate = (dateStr: any): string => {
+  if (dateStr === undefined || dateStr === null || dateStr === '') {
+    throw new Error('Date is required');
+  }
+  
+  // Limit string length to prevent memory issues
+  const str = String(dateStr).substring(0, MAX_DATE_STRING_LENGTH).trim();
+  
+  // Handle Excel serial date numbers
+  if (typeof dateStr === 'number') {
+    const excelEpoch = new Date(1899, 11, 30);
+    const date = new Date(excelEpoch.getTime() + dateStr * 86400000);
+    if (isNaN(date.getTime())) {
+      throw new Error('Invalid date format');
+    }
+    return date.toISOString().split('T')[0];
+  }
+  
+  // Parse string date
+  const date = new Date(str);
+  if (isNaN(date.getTime())) {
+    throw new Error('Invalid date format');
+  }
+  
+  return str;
+};
+
 export const parseExcelFile = async (file: File): Promise<FinancialData[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -35,38 +96,73 @@ export const parseExcelFile = async (file: File): Promise<FinancialData[]> => {
     reader.onload = (e) => {
       try {
         const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'binary' });
+        
+        // Use secure XLSX options to prevent formula evaluation and HTML parsing
+        const workbook = XLSX.read(data, { 
+          type: 'binary',
+          cellFormula: false,  // Don't parse formulas
+          cellHTML: false,     // Don't parse HTML
+          cellText: false      // Don't parse rich text
+        });
+        
         const sheetName = workbook.SheetNames[0];
+        if (!sheetName) {
+          reject(new Error('No worksheets found in file'));
+          return;
+        }
+        
         const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: true });
 
-        const parsedData: FinancialData[] = jsonData.map((row: any) => ({
-          date: row['Date'] || row['Month'] || '',
-          revenue: parseFloat(row['Revenue'] || row['MRR'] || 0),
-          operatingExpenses: parseFloat(row['Operating Expenses'] || row['Expenses'] || 0),
-          customerCount: parseInt(row['Customer Count'] || row['Customers'] || 0),
-          churnRate: parseFloat(row['Churn Rate'] || row['Churn'] || 0),
-          cashIn: parseFloat(row['Cash In'] || 0),
-          cashOut: parseFloat(row['Cash Out'] || 0),
-          cashBalance: parseFloat(row['Cash Balance'] || 0),
-        }));
-
-        // Validate data
-        if (parsedData.length === 0) {
+        // Validate row count to prevent memory exhaustion
+        if (jsonData.length === 0) {
           reject(new Error('No data found in file'));
           return;
         }
+        
+        if (jsonData.length > MAX_ROWS) {
+          reject(new Error(`File contains too many rows (${jsonData.length}). Maximum ${MAX_ROWS} rows allowed.`));
+          return;
+        }
 
-        // Check for required columns
+        // Parse and validate each row with comprehensive error handling
+        const parsedData: FinancialData[] = [];
+        
+        for (let index = 0; index < jsonData.length; index++) {
+          const row: any = jsonData[index];
+          const rowNumber = index + 2; // +2 because Excel rows are 1-indexed and row 1 is header
+          
+          try {
+            const parsedRow: FinancialData = {
+              date: validateDate(row['Date'] || row['Month']),
+              revenue: validatePositiveNumber(row['Revenue'] || row['MRR'] || 0, 'Revenue'),
+              operatingExpenses: validatePositiveNumber(row['Operating Expenses'] || row['Expenses'] || 0, 'Operating Expenses'),
+              customerCount: Math.floor(validatePositiveNumber(row['Customer Count'] || row['Customers'] || 0, 'Customer Count')),
+              churnRate: validatePercentage(row['Churn Rate'] || row['Churn'] || 0, 'Churn Rate'),
+              cashIn: validatePositiveNumber(row['Cash In'] || 0, 'Cash In'),
+              cashOut: validatePositiveNumber(row['Cash Out'] || 0, 'Cash Out'),
+              cashBalance: validateNumber(row['Cash Balance'] || 0, 'Cash Balance'), // Can be negative
+            };
+            
+            parsedData.push(parsedRow);
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            reject(new Error(`Row ${rowNumber}: ${errorMessage}`));
+            return;
+          }
+        }
+
+        // Check for required columns (date and revenue must have valid data)
         const firstRow = parsedData[0];
-        if (!firstRow.date || firstRow.revenue === undefined) {
-          reject(new Error('Missing required columns: Date and Revenue are required'));
+        if (!firstRow.date) {
+          reject(new Error('Missing required column: Date or Month'));
           return;
         }
 
         resolve(parsedData);
       } catch (error) {
-        reject(new Error('Failed to parse Excel file. Please check the format.'));
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        reject(new Error(`Failed to parse Excel file: ${errorMessage}`));
       }
     };
 
