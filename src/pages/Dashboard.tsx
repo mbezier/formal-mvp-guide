@@ -25,12 +25,12 @@ export default function Dashboard() {
       // Load demo data if no data uploaded
       setIsDemo(true);
       const demoData: FinancialData[] = [
-        { date: '2024-01-01', revenue: 45000, operatingExpenses: 35000, customerCount: 120, churnRate: 5, cashIn: 42000, cashOut: 55000, cashBalance: 95000 },
-        { date: '2024-02-01', revenue: 48000, operatingExpenses: 38000, customerCount: 135, churnRate: 4, cashIn: 46000, cashOut: 52000, cashBalance: 89000 },
-        { date: '2024-03-01', revenue: 52000, operatingExpenses: 40000, customerCount: 150, churnRate: 6, cashIn: 50000, cashOut: 54000, cashBalance: 85000 },
-        { date: '2024-04-01', revenue: 55000, operatingExpenses: 42000, customerCount: 165, churnRate: 5, cashIn: 53000, cashOut: 51000, cashBalance: 87000 },
-        { date: '2024-05-01', revenue: 61000, operatingExpenses: 45000, customerCount: 185, churnRate: 7, cashIn: 58000, cashOut: 53000, cashBalance: 92000 },
-        { date: '2024-06-01', revenue: 68000, operatingExpenses: 48000, customerCount: 210, churnRate: 6, cashIn: 65000, cashOut: 55000, cashBalance: 102000 },
+        { date: '2024-01-01', revenue: 45000, operatingExpenses: 35000, customerCount: 120, churnRate: 5, cashIn: 42000, cashOut: 78000, cashBalance: 320000 },
+        { date: '2024-02-01', revenue: 48000, operatingExpenses: 38000, customerCount: 135, churnRate: 4, cashIn: 46000, cashOut: 82000, cashBalance: 284000 },
+        { date: '2024-03-01', revenue: 52000, operatingExpenses: 40000, customerCount: 150, churnRate: 6, cashIn: 50000, cashOut: 85000, cashBalance: 249000 },
+        { date: '2024-04-01', revenue: 55000, operatingExpenses: 42000, customerCount: 165, churnRate: 5, cashIn: 53000, cashOut: 88000, cashBalance: 214000 },
+        { date: '2024-05-01', revenue: 61000, operatingExpenses: 45000, customerCount: 185, churnRate: 7, cashIn: 58000, cashOut: 92000, cashBalance: 180000 },
+        { date: '2024-06-01', revenue: 68000, operatingExpenses: 48000, customerCount: 210, churnRate: 6, cashIn: 65000, cashOut: 95000, cashBalance: 150000 },
       ];
       setData(demoData);
       try {
