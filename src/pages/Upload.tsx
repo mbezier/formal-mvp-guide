@@ -1,30 +1,108 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload as UploadIcon, Download, CheckCircle2, Sparkles } from "lucide-react";
+import { Upload as UploadIcon, Download, CheckCircle2, Sparkles, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { parseExcelFile, generateExcelTemplate, FinancialData } from "@/lib/excel-utils";
 import { useToast } from "@/hooks/use-toast";
 
+// File validation constants
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const ALLOWED_EXTENSIONS = ['.xlsx', '.xls', '.csv'];
+const ALLOWED_MIME_TYPES = [
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  'application/vnd.ms-excel',
+  'text/csv',
+  'application/csv',
+];
+
+// Validate file before processing
+const validateFile = (file: File): { valid: boolean; error?: string } => {
+  // Check file size
+  if (file.size > MAX_FILE_SIZE) {
+    return { 
+      valid: false, 
+      error: `File size exceeds 10MB limit. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.` 
+    };
+  }
+
+  // Check file size is not zero (corrupted)
+  if (file.size === 0) {
+    return { valid: false, error: 'File appears to be empty or corrupted.' };
+  }
+
+  // Check file extension
+  const fileName = file.name.toLowerCase();
+  const hasValidExtension = ALLOWED_EXTENSIONS.some(ext => fileName.endsWith(ext));
+  if (!hasValidExtension) {
+    return { 
+      valid: false, 
+      error: `Invalid file type. Please upload an Excel (.xlsx, .xls) or CSV file.` 
+    };
+  }
+
+  // Check MIME type (with fallback for CSV which can have various MIME types)
+  const isValidMime = ALLOWED_MIME_TYPES.includes(file.type) || 
+    (fileName.endsWith('.csv') && (file.type === '' || file.type.includes('text')));
+  
+  if (!isValidMime && file.type !== '') {
+    return { 
+      valid: false, 
+      error: `File type mismatch. The file extension doesn't match its content type.` 
+    };
+  }
+
+  return { valid: true };
+};
+
 export default function Upload() {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [fileError, setFileError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      setFile(e.target.files[0]);
-      setSuccess(false);
+      const selectedFile = e.target.files[0];
+      const validation = validateFile(selectedFile);
+      
+      if (!validation.valid) {
+        setFileError(validation.error || 'Invalid file');
+        setFile(null);
+        toast({
+          title: "Invalid file",
+          description: validation.error,
+          variant: "destructive",
+        });
+      } else {
+        setFileError(null);
+        setFile(selectedFile);
+        setSuccess(false);
+      }
     }
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setFile(e.dataTransfer.files[0]);
-      setSuccess(false);
+      const droppedFile = e.dataTransfer.files[0];
+      const validation = validateFile(droppedFile);
+      
+      if (!validation.valid) {
+        setFileError(validation.error || 'Invalid file');
+        setFile(null);
+        toast({
+          title: "Invalid file",
+          description: validation.error,
+          variant: "destructive",
+        });
+      } else {
+        setFileError(null);
+        setFile(droppedFile);
+        setSuccess(false);
+      }
     }
   };
 
@@ -242,6 +320,16 @@ export default function Upload() {
                 )}
               </label>
             </div>
+
+            {fileError && (
+              <div className="mt-4 p-4 bg-destructive/10 border border-destructive/20 rounded flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-medium text-destructive">File validation failed</p>
+                  <p className="text-sm text-destructive/80 mt-1">{fileError}</p>
+                </div>
+              </div>
+            )}
 
             {file && !success && (
               <div className="mt-6 flex justify-end">
