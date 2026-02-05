@@ -96,11 +96,11 @@ export default function Dashboard() {
         <div className="flex items-center justify-between mb-8">
           <Button
             variant="outline"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/analyze')}
             className="border-foreground/20"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Upload
+            Back to Analyze
           </Button>
           <Button
             onClick={handleExportPDF}
