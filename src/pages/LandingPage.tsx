@@ -66,7 +66,8 @@
              <Button 
                asChild
                size="lg" 
-               className="bg-neon text-neon-foreground hover:bg-neon/90 font-semibold px-8"
+               className="font-semibold px-8 text-black"
+               style={{ backgroundColor: 'hsl(142 100% 50%)' }}
              >
                <Link to="/analyze">Analyze a Deal</Link>
              </Button>
@@ -76,8 +77,22 @@
                size="lg"
                className="border-border hover:bg-accent"
              >
-               <Link to="/dashboard">View Sample Report</Link>
+               <Link to="/dashboard">Apply for Research Partnership</Link>
              </Button>
+           </div>
+           
+           {/* Scarcity Badge */}
+           <div className="mt-6 flex justify-center">
+             <div 
+               className="inline-flex items-center gap-2 px-4 py-2 rounded-full text-xs font-medium"
+               style={{ 
+                 backgroundColor: 'hsl(45 100% 50% / 0.15)', 
+                 color: 'hsl(45 100% 50%)',
+                 border: '1px solid hsl(45 100% 50% / 0.3)'
+               }}
+             >
+               ⚠️ Beta Cohort Full. 2 spots opened for March 2026.
+             </div>
            </div>
          </div>
        </section>
@@ -173,6 +188,19 @@
          </div>
        </section>
  
+       {/* Research Supervision Section */}
+       <section className="container mx-auto px-4 py-12">
+         <div className="max-w-3xl mx-auto text-center border-t border-border/30 pt-12">
+           <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">
+             Academic Supervision & Methodology
+           </h3>
+           <p className="text-sm text-muted-foreground/70 leading-relaxed">
+             Research conducted under the supervision of <span className="text-muted-foreground">Prof. Jean-Philippe Bonardi</span>, PhD — 
+             Faculty of Business and Economics (HEC), University of Lausanne (UNIL).
+           </p>
+         </div>
+       </section>
+
        {/* Footer */}
        <footer className="border-t border-border/40 mt-16">
          <div className="container mx-auto px-4 py-8">
