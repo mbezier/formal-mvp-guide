@@ -143,11 +143,11 @@
                      {[40, 55, 45, 70, 60, 85, 75, 90].map((height, i) => (
                        <div key={i} className="flex-1 flex gap-1">
                          <div 
-                           className="flex-1 bg-neon/60 rounded-t" 
-                           style={{ height: `${height}%` }}
+                           className="flex-1 rounded-t" 
+                           style={{ height: `${height}%`, backgroundColor: 'hsl(142 100% 50% / 0.6)' }}
                          />
                          <div 
-                           className="flex-1 bg-muted rounded-t" 
+                           className="flex-1 bg-muted rounded-t"
                            style={{ height: `${height * 0.7}%` }}
                          />
                        </div>
@@ -155,7 +155,7 @@
                    </div>
                    <div className="flex items-center gap-4 mt-4 text-xs text-muted-foreground">
                      <div className="flex items-center gap-2">
-                       <div className="w-3 h-3 bg-neon/60 rounded" />
+                       <div className="w-3 h-3 rounded" style={{ backgroundColor: 'hsl(142 100% 50% / 0.6)' }} />
                        <span>Adjusted EBITDA</span>
                      </div>
                      <div className="flex items-center gap-2">
