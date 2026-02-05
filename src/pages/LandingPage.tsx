@@ -192,11 +192,11 @@
        <section className="container mx-auto px-4 py-12">
          <div className="max-w-3xl mx-auto text-center border-t border-border/30 pt-12">
            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider mb-4">
-             Academic Supervision & Methodology
+             Research Supervisor
            </h3>
-           <p className="text-sm text-muted-foreground/70 leading-relaxed">
-             Research conducted under the supervision of <span className="text-muted-foreground">Prof. Jean-Philippe Bonardi</span>, PhD — 
-             Faculty of Business and Economics (HEC), University of Lausanne (UNIL).
+           <p className="text-base font-medium text-foreground mb-1">Amine Tazi</p>
+           <p className="text-sm text-muted-foreground/70">
+             Managing Partner at Value Bridge Partners & Lecturer at HEC Lausanne
            </p>
          </div>
        </section>
