@@ -110,7 +110,13 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       {/* Demo Banner */}
       {isDemo && showDemoBanner && (
-        <div className="sticky top-0 z-50 bg-neon/10 border-b border-neon/30 px-4 py-3">
+       <div 
+         className="sticky top-0 z-50 border-b px-4 py-3"
+         style={{ 
+           backgroundColor: 'hsl(142 100% 50% / 0.1)', 
+           borderColor: 'hsl(142 100% 50% / 0.3)' 
+         }}
+       >
           <div className="container mx-auto flex items-center justify-between">
             <p className="text-sm text-foreground">
               👀 You are viewing a <span className="font-semibold">Demo Dataset</span>. Real-time processing is reserved for Beta Partners.
@@ -118,7 +124,8 @@ export default function Dashboard() {
             <div className="flex items-center gap-3">
               <Button 
                 size="sm" 
-                className="bg-neon text-neon-foreground hover:bg-neon/90"
+               className="text-black font-medium"
+               style={{ backgroundColor: 'hsl(142 100% 50%)' }}
                 onClick={() => window.location.href = 'mailto:beta@finarrow.app?subject=Beta Access Request'}
               >
                 Get Beta Access
