@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { DollarSign, Users, TrendingDown, Gauge, Ratio, UserCircle, FileDown, ArrowLeft } from "lucide-react";
+import { DollarSign, Users, TrendingDown, Gauge, Ratio, UserCircle, FileDown, ArrowLeft, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { KPICard } from "@/components/KPICard";
@@ -9,17 +9,36 @@ import { exportToPDF } from "@/lib/pdf-export";
 import { useToast } from "@/hooks/use-toast";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tooltip as UITooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function Dashboard() {
   const [data, setData] = useState<FinancialData[]>([]);
   const [kpis, setKpis] = useState<KPIMetrics | null>(null);
+  const [showDemoBanner, setShowDemoBanner] = useState(true);
+  const [isDemo, setIsDemo] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
     const storedData = sessionStorage.getItem('financialData');
     if (!storedData) {
-      navigate('/');
+      // Load demo data if no data uploaded
+      setIsDemo(true);
+      const demoData: FinancialData[] = [
+       { date: '2024-01-01', revenue: 45000, operatingExpenses: 35000, customerCount: 120, churnRate: 5, cashIn: 42000, cashOut: 55000, cashBalance: 180000 },
+       { date: '2024-02-01', revenue: 48000, operatingExpenses: 38000, customerCount: 135, churnRate: 4, cashIn: 46000, cashOut: 52000, cashBalance: 174000 },
+       { date: '2024-03-01', revenue: 52000, operatingExpenses: 40000, customerCount: 150, churnRate: 6, cashIn: 50000, cashOut: 54000, cashBalance: 170000 },
+       { date: '2024-04-01', revenue: 55000, operatingExpenses: 42000, customerCount: 165, churnRate: 5, cashIn: 53000, cashOut: 51000, cashBalance: 172000 },
+       { date: '2024-05-01', revenue: 61000, operatingExpenses: 45000, customerCount: 185, churnRate: 7, cashIn: 58000, cashOut: 53000, cashBalance: 177000 },
+       { date: '2024-06-01', revenue: 68000, operatingExpenses: 48000, customerCount: 210, churnRate: 6, cashIn: 65000, cashOut: 55000, cashBalance: 187000 },
+      ];
+      setData(demoData);
+      try {
+        const calculatedKPIs = calculateKPIs(demoData);
+        setKpis(calculatedKPIs);
+      } catch (error) {
+        console.error('Failed to calculate demo KPIs:', error);
+      }
       return;
     }
 
@@ -89,6 +108,32 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Demo Banner */}
+      {isDemo && showDemoBanner && (
+        <div className="sticky top-0 z-50 bg-neon/10 border-b border-neon/30 px-4 py-3">
+          <div className="container mx-auto flex items-center justify-between">
+            <p className="text-sm text-foreground">
+              👀 You are viewing a <span className="font-semibold">Demo Dataset</span>. Real-time processing is reserved for Beta Partners.
+            </p>
+            <div className="flex items-center gap-3">
+              <Button 
+                size="sm" 
+                className="bg-neon text-neon-foreground hover:bg-neon/90"
+                onClick={() => window.location.href = 'mailto:beta@finarrow.app?subject=Beta Access Request'}
+              >
+                Get Beta Access
+              </Button>
+              <button 
+                onClick={() => setShowDemoBanner(false)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <Header />
       
       <main className="container mx-auto px-4 py-8">
@@ -96,24 +141,47 @@ export default function Dashboard() {
         <div className="flex items-center justify-between mb-8">
           <Button
             variant="outline"
-            onClick={() => navigate('/analyze')}
+            onClick={() => navigate('/')}
             className="border-foreground/20"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Analyze
+            Back to Home
           </Button>
-          <Button
-            onClick={handleExportPDF}
-            className="bg-foreground text-background hover:bg-foreground/90"
-          >
-            <FileDown className="h-4 w-4 mr-2" />
-            Export PDF
-          </Button>
+          <div className="flex items-center gap-3">
+            {isDemo && (
+              <TooltipProvider>
+                <UITooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="outline"
+                      disabled
+                      className="border-foreground/20 opacity-50 cursor-not-allowed"
+                    >
+                      Upload CSV
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Available in Full Version</p>
+                  </TooltipContent>
+                </UITooltip>
+              </TooltipProvider>
+            )}
+            <Button
+              onClick={handleExportPDF}
+              className="bg-foreground text-background hover:bg-foreground/90"
+            >
+              <FileDown className="h-4 w-4 mr-2" />
+              Export PDF
+            </Button>
+          </div>
         </div>
 
         {/* Page Title */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+          <h1 className="text-3xl font-bold mb-2">
+            Dashboard
+            {isDemo && <span className="ml-3 text-sm font-normal text-neon">(Demo)</span>}
+          </h1>
           <p className="text-muted-foreground">Key performance indicators for your SaaS business</p>
         </div>
 
