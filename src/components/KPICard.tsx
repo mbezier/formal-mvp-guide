@@ -2,6 +2,7 @@ import { LucideIcon } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowUp, ArrowDown, Minus, HelpCircle } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Badge } from "@/components/ui/badge";
 
 interface KPICardProps {
   title: string;
@@ -13,9 +14,13 @@ interface KPICardProps {
     description: string;
     formula: string;
   };
+  badge?: {
+    text: string;
+    variant: 'success' | 'warning' | 'danger';
+  };
 }
 
-export const KPICard = ({ title, value, change, icon: Icon, trend, tooltipContent }: KPICardProps) => {
+export const KPICard = ({ title, value, change, icon: Icon, trend, tooltipContent, badge }: KPICardProps) => {
   const getTrendColor = () => {
     if (trend === 'up') return 'text-success';
     if (trend === 'down') return 'text-destructive';
@@ -26,6 +31,20 @@ export const KPICard = ({ title, value, change, icon: Icon, trend, tooltipConten
     if (trend === 'up') return <ArrowUp className="h-3 w-3" />;
     if (trend === 'down') return <ArrowDown className="h-3 w-3" />;
     return <Minus className="h-3 w-3" />;
+  };
+
+  const getBadgeStyles = () => {
+    if (!badge) return '';
+    switch (badge.variant) {
+      case 'success':
+        return 'bg-success/20 text-success border-success/30';
+      case 'warning':
+        return 'bg-amber-500/20 text-amber-500 border-amber-500/30';
+      case 'danger':
+        return 'bg-destructive/20 text-destructive border-destructive/30';
+      default:
+        return '';
+    }
   };
 
   return (
@@ -56,7 +75,14 @@ export const KPICard = ({ title, value, change, icon: Icon, trend, tooltipConten
                 </TooltipProvider>
               )}
             </div>
-            <p className="text-3xl font-bold tracking-tight">{value}</p>
+            <div className="flex items-center gap-2">
+              <p className="text-3xl font-bold tracking-tight">{value}</p>
+              {badge && (
+                <Badge className={`text-[10px] px-1.5 py-0.5 ${getBadgeStyles()}`}>
+                  {badge.text}
+                </Badge>
+              )}
+            </div>
             {change !== undefined && (
               <div className={`flex items-center space-x-1 text-sm font-medium ${getTrendColor()}`}>
                 {getTrendIcon()}
