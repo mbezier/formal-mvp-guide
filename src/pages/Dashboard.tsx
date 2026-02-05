@@ -83,18 +83,6 @@ export default function Dashboard() {
     );
   }
 
-   // Calculate Cash Zero Date from runway months
-   const getCashZeroDate = (runwayMonths: number) => {
-     const today = new Date();
-     const cashZeroDate = new Date(today);
-     cashZeroDate.setMonth(today.getMonth() + Math.floor(runwayMonths));
-     return cashZeroDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' });
-   };
-
-   // Risk flags
-   const isChurnRisk = kpis.churnRate > 1;
-   const isBurnRisk = kpis.burnRate > 0; // Positive burn = spending more than earning
-
   // Prepare chart data
   const chartData = data.map((item) => {
     // Excel dates might be serial numbers, strings, or Date objects
@@ -212,10 +200,6 @@ export default function Dashboard() {
             change={kpis.mrrChange}
             icon={DollarSign}
             trend={kpis.mrrChange > 0 ? 'up' : kpis.mrrChange < 0 ? 'down' : 'neutral'}
-             badge={{
-               label: isDemo ? '⚠️ Manual Entry' : '✓ Stripe Verified',
-               variant: isDemo ? 'warning' : 'success'
-             }}
             tooltipContent={{
               description: "Monthly Recurring Revenue - the predictable revenue your business generates each month from subscriptions.",
               formula: "Total Monthly Subscription Revenue"
@@ -237,10 +221,9 @@ export default function Dashboard() {
             value={`${kpis.churnRate.toFixed(1)}%`}
             change={kpis.churnChange}
             icon={TrendingDown}
-             trend={isChurnRisk ? 'down' : kpis.churnChange < 0 ? 'up' : 'neutral'}
-             isRisk={isChurnRisk}
+            trend={kpis.churnChange < 0 ? 'up' : kpis.churnChange > 0 ? 'down' : 'neutral'}
             tooltipContent={{
-               description: "The percentage of customers who stop their subscription monthly. >1% monthly = >12% annual churn (risky). >5% = business at risk.",
+              description: "The percentage of customers who stop their subscription. A lower churn rate indicates better customer retention.",
               formula: "Churned Customers / Total Customers × 100"
             }}
           />
@@ -249,22 +232,20 @@ export default function Dashboard() {
             value={`$${kpis.burnRate.toLocaleString()}`}
             change={kpis.burnRateChange}
             icon={TrendingDown}
-             trend={isBurnRisk ? 'down' : 'up'}
-             isRisk={isBurnRisk}
+            trend={kpis.burnRateChange < 0 ? 'up' : kpis.burnRateChange > 0 ? 'down' : 'neutral'}
             tooltipContent={{
-               description: "Net Burn Rate - positive means spending more than earning (cash outflow). Negative burn means cash positive.",
+              description: "Net Burn Rate - how much cash you're spending per month after accounting for revenue. Lower burn = longer runway.",
               formula: "Cash Out - Cash In"
             }}
           />
           <KPICard
-             title="Cash Zero Date"
-             value={getCashZeroDate(kpis.runwayMonths)}
+            title="Runway"
+            value={`${kpis.runwayMonths.toFixed(1)} mo`}
             icon={Gauge}
             trend={kpis.runwayMonths > 6 ? 'up' : kpis.runwayMonths < 3 ? 'down' : 'neutral'}
-             isRisk={kpis.runwayMonths < 6}
             tooltipContent={{
-               description: "Projected date when cash hits zero at current burn rate. Earlier dates = higher risk.",
-               formula: `Today + ${kpis.runwayMonths.toFixed(1)} months runway`
+              description: "How many months your business can operate before running out of cash at the current burn rate.",
+              formula: "Cash Balance / Average Monthly Burn Rate"
             }}
           />
           <KPICard
@@ -388,21 +369,21 @@ export default function Dashboard() {
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Churn Rate</TableCell>
-                 <TableCell className={`text-right ${isChurnRisk ? 'text-destructive font-semibold' : ''}`}>{kpis.churnRate.toFixed(1)}%</TableCell>
+                <TableCell className="text-right">{kpis.churnRate.toFixed(1)}%</TableCell>
                 <TableCell className={`text-right ${kpis.churnChange < 0 ? 'text-success' : kpis.churnChange > 0 ? 'text-destructive' : ''}`}>
                   {kpis.churnChange > 0 ? '+' : ''}{kpis.churnChange.toFixed(1)}%
                 </TableCell>
               </TableRow>
               <TableRow>
                 <TableCell className="font-medium">Net Burn Rate</TableCell>
-                 <TableCell className={`text-right ${isBurnRisk ? 'text-destructive font-semibold' : 'text-success'}`}>${kpis.burnRate.toLocaleString()}</TableCell>
+                <TableCell className="text-right">${kpis.burnRate.toLocaleString()}</TableCell>
                 <TableCell className={`text-right ${kpis.burnRateChange < 0 ? 'text-success' : kpis.burnRateChange > 0 ? 'text-destructive' : ''}`}>
                   {kpis.burnRateChange > 0 ? '+' : ''}{kpis.burnRateChange.toFixed(1)}%
                 </TableCell>
               </TableRow>
               <TableRow>
-                 <TableCell className="font-medium">Cash Zero Date</TableCell>
-                 <TableCell className={`text-right ${kpis.runwayMonths < 6 ? 'text-destructive font-semibold' : ''}`}>{getCashZeroDate(kpis.runwayMonths)}</TableCell>
+                <TableCell className="font-medium">Runway</TableCell>
+                <TableCell className="text-right">{kpis.runwayMonths.toFixed(1)} months</TableCell>
                 <TableCell className="text-right">-</TableCell>
               </TableRow>
               <TableRow>

@@ -9,20 +9,14 @@ interface KPICardProps {
   change?: number;
   icon: LucideIcon;
   trend?: 'up' | 'down' | 'neutral';
-   isRisk?: boolean;
-   badge?: {
-     label: string;
-     variant: 'success' | 'warning' | 'danger';
-   };
   tooltipContent?: {
     description: string;
     formula: string;
   };
 }
 
- export const KPICard = ({ title, value, change, icon: Icon, trend, isRisk, badge, tooltipContent }: KPICardProps) => {
+export const KPICard = ({ title, value, change, icon: Icon, trend, tooltipContent }: KPICardProps) => {
   const getTrendColor = () => {
-     if (isRisk) return 'text-destructive';
     if (trend === 'up') return 'text-success';
     if (trend === 'down') return 'text-destructive';
     return 'text-muted-foreground';
@@ -33,18 +27,6 @@ interface KPICardProps {
     if (trend === 'down') return <ArrowDown className="h-3 w-3" />;
     return <Minus className="h-3 w-3" />;
   };
-
-   const getBadgeStyle = () => {
-     if (!badge) return {};
-     switch (badge.variant) {
-       case 'success':
-         return { backgroundColor: 'hsl(142 100% 50% / 0.15)', color: 'hsl(142 100% 50%)', border: '1px solid hsl(142 100% 50% / 0.3)' };
-       case 'warning':
-         return { backgroundColor: 'hsl(45 100% 50% / 0.15)', color: 'hsl(45 100% 50%)', border: '1px solid hsl(45 100% 50% / 0.3)' };
-       case 'danger':
-         return { backgroundColor: 'hsl(0 100% 50% / 0.15)', color: 'hsl(0 100% 50%)', border: '1px solid hsl(0 100% 50% / 0.3)' };
-     }
-   };
 
   return (
     <Card className="border border-border hover:border-foreground/20 transition-colors">
@@ -74,17 +56,7 @@ interface KPICardProps {
                 </TooltipProvider>
               )}
             </div>
-             <div className="flex items-center gap-2">
-               <p className={`text-3xl font-bold tracking-tight ${isRisk ? 'text-destructive' : ''}`}>{value}</p>
-               {badge && (
-                 <span 
-                   className="text-xs font-medium px-2 py-0.5 rounded-full"
-                   style={getBadgeStyle()}
-                 >
-                   {badge.label}
-                 </span>
-               )}
-             </div>
+            <p className="text-3xl font-bold tracking-tight">{value}</p>
             {change !== undefined && (
               <div className={`flex items-center space-x-1 text-sm font-medium ${getTrendColor()}`}>
                 {getTrendIcon()}
