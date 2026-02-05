@@ -76,7 +76,7 @@
                size="lg"
                className="border-border hover:bg-accent"
              >
-               <Link to="/analyze">View Sample Report</Link>
+               <Link to="/dashboard">View Sample Report</Link>
              </Button>
            </div>
          </div>
