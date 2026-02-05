@@ -328,6 +328,7 @@ export default function Dashboard() {
                 <YAxis 
                   tick={{ fill: 'hsl(var(--muted-foreground))' }}
                   stroke="hsl(var(--border))"
+                  domain={['dataMin - 5000', 'dataMax + 5000']}
                 />
                 <Tooltip 
                   contentStyle={{ 
