@@ -154,20 +154,20 @@
                  <div className="w-full h-full p-6 bg-background">
                    <div className="text-sm text-muted-foreground mb-4">Dashboard Preview</div>
                    <div className="text-lg font-semibold mb-6">Adjusted EBITDA vs. Reported EBITDA</div>
-                   <div className="h-40 flex items-end gap-3 px-4">
-                     {[40, 55, 45, 70, 60, 85, 75, 90].map((height, i) => (
-                       <div key={i} className="flex-1 flex gap-1 h-full items-end">
-                         <div 
-                           className="flex-1 rounded-t" 
-                           style={{ height: `${height * 1.5}px`, backgroundColor: 'hsl(142 100% 50% / 0.6)' }}
-                         />
-                         <div 
-                           className="flex-1 bg-muted rounded-t"
-                           style={{ height: `${height * 1.05}px` }}
-                         />
-                       </div>
-                     ))}
-                   </div>
+                    <div className="h-40 flex items-end gap-3 px-4">
+                      {[40, 55, 45, 70, 60, 85, 75, 90].map((height, i) => (
+                        <div key={i} className="flex-1 flex gap-1 h-full items-end">
+                          <div 
+                            className="flex-1 rounded-t" 
+                            style={{ height: `${height * 0.65}px`, backgroundColor: 'hsl(142 100% 50% / 0.6)' }}
+                          />
+                          <div 
+                            className="flex-1 rounded-t"
+                            style={{ height: `${height * 1.5}px`, backgroundColor: 'hsl(0 0% 55%)' }}
+                          />
+                        </div>
+                      ))}
+                    </div>
                    <div className="flex items-center gap-4 mt-4 text-xs text-muted-foreground">
                      <div className="flex items-center gap-2">
                        <div className="w-3 h-3 rounded" style={{ backgroundColor: 'hsl(142 100% 50% / 0.6)' }} />
