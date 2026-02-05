@@ -21,7 +21,11 @@ export default function Dashboard() {
 
   useEffect(() => {
     const storedData = sessionStorage.getItem('financialData');
-    if (!storedData) {
+    // For demo purposes, always show demo data (clear any stale cache)
+    // In production, this would check if user explicitly uploaded their own file
+    const hasUserUploadedData = storedData && sessionStorage.getItem('userUploadedFile') === 'true';
+    
+    if (!hasUserUploadedData) {
       // Load demo data if no data uploaded
       setIsDemo(true);
       const demoData: FinancialData[] = [
@@ -32,6 +36,9 @@ export default function Dashboard() {
         { date: '2024-05-01', revenue: 61000, operatingExpenses: 45000, customerCount: 185, churnRate: 7, cashIn: 58000, cashOut: 92000, cashBalance: 180000 },
         { date: '2024-06-01', revenue: 68000, operatingExpenses: 48000, customerCount: 210, churnRate: 6, cashIn: 65000, cashOut: 95000, cashBalance: 150000 },
       ];
+      // Clear any stale cached data
+      sessionStorage.removeItem('financialData');
+      sessionStorage.removeItem('userUploadedFile');
       setData(demoData);
       try {
         const calculatedKPIs = calculateKPIs(demoData);

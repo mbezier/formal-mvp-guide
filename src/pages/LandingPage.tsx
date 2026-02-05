@@ -77,7 +77,7 @@
                size="lg"
                className="border-border hover:bg-accent"
              >
-               <Link to="/dashboard">Apply for Research Partnership</Link>
+              <Link to="/dashboard">View Sample Report</Link>
              </Button>
            </div>
            
