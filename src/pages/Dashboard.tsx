@@ -126,7 +126,7 @@ export default function Dashboard() {
                 size="sm" 
                className="text-black font-medium"
                style={{ backgroundColor: 'hsl(142 100% 50%)' }}
-                onClick={() => window.location.href = 'mailto:beta@finarrow.app?subject=Beta Access Request'}
+               onClick={() => window.location.href = 'mailto:maxime.bezier@unil.ch?subject=FinArrow Beta Access Request'}
               >
                 Get Beta Access
               </Button>
