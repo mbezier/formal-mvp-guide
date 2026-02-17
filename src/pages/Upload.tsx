@@ -257,7 +257,7 @@ export default function Upload() {
                   Get started with our pre-formatted Excel template. Fill in your monthly data including revenue, expenses, customers, and cash flow.
                 </p>
                 <Button 
-                  onClick={generateExcelTemplate}
+                  onClick={() => generateExcelTemplate()}
                   variant="outline"
                   className="border-foreground/20 hover:bg-foreground hover:text-background"
                 >
