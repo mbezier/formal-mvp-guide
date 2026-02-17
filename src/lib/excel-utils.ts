@@ -1,4 +1,4 @@
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 
 // Validation constants
 const MAX_ROWS = 1000;
@@ -67,6 +67,14 @@ const validateDate = (dateStr: any): string => {
     throw new Error('Date is required');
   }
   
+  // Handle Date objects (ExcelJS returns Date objects for date cells)
+  if (dateStr instanceof Date) {
+    if (isNaN(dateStr.getTime())) {
+      throw new Error('Invalid date format');
+    }
+    return dateStr.toISOString().split('T')[0];
+  }
+  
   // Limit string length to prevent memory issues
   const str = String(dateStr).substring(0, MAX_DATE_STRING_LENGTH).trim();
   
@@ -89,89 +97,90 @@ const validateDate = (dateStr: any): string => {
   return str;
 };
 
-export const parseExcelFile = async (file: File): Promise<FinancialData[]> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    
-    reader.onload = (e) => {
-      try {
-        const data = e.target?.result;
-        
-        // Use secure XLSX options to prevent formula evaluation and HTML parsing
-        const workbook = XLSX.read(data, { 
-          type: 'binary',
-          cellFormula: false,  // Don't parse formulas
-          cellHTML: false,     // Don't parse HTML
-          cellText: false      // Don't parse rich text
-        });
-        
-        const sheetName = workbook.SheetNames[0];
-        if (!sheetName) {
-          reject(new Error('No worksheets found in file'));
-          return;
-        }
-        
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { raw: true });
-
-        // Validate row count to prevent memory exhaustion
-        if (jsonData.length === 0) {
-          reject(new Error('No data found in file'));
-          return;
-        }
-        
-        if (jsonData.length > MAX_ROWS) {
-          reject(new Error(`File contains too many rows (${jsonData.length}). Maximum ${MAX_ROWS} rows allowed.`));
-          return;
-        }
-
-        // Parse and validate each row with comprehensive error handling
-        const parsedData: FinancialData[] = [];
-        
-        for (let index = 0; index < jsonData.length; index++) {
-          const row: any = jsonData[index];
-          const rowNumber = index + 2; // +2 because Excel rows are 1-indexed and row 1 is header
-          
-          try {
-            const parsedRow: FinancialData = {
-              date: validateDate(row['Date'] || row['Month']),
-              revenue: validatePositiveNumber(row['Revenue'] || row['MRR'] || 0, 'Revenue'),
-              operatingExpenses: validatePositiveNumber(row['Operating Expenses'] || row['Expenses'] || 0, 'Operating Expenses'),
-              customerCount: Math.floor(validatePositiveNumber(row['Customer Count'] || row['Customers'] || 0, 'Customer Count')),
-              churnRate: validatePercentage(row['Churn Rate'] || row['Churn'] || 0, 'Churn Rate'),
-              cashIn: validatePositiveNumber(row['Cash In'] || 0, 'Cash In'),
-              cashOut: validatePositiveNumber(row['Cash Out'] || 0, 'Cash Out'),
-              cashBalance: validateNumber(row['Cash Balance'] || 0, 'Cash Balance'), // Can be negative
-            };
-            
-            parsedData.push(parsedRow);
-          } catch (error) {
-            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-            reject(new Error(`Row ${rowNumber}: ${errorMessage}`));
-            return;
-          }
-        }
-
-        // Check for required columns (date and revenue must have valid data)
-        const firstRow = parsedData[0];
-        if (!firstRow.date) {
-          reject(new Error('Missing required column: Date or Month'));
-          return;
-        }
-
-        resolve(parsedData);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        reject(new Error(`Failed to parse Excel file: ${errorMessage}`));
+// Helper to get cell value by column header name
+const getValueByHeader = (row: ExcelJS.Row, headerMap: Map<string, number>, ...possibleNames: string[]): any => {
+  for (const name of possibleNames) {
+    const colIndex = headerMap.get(name.toLowerCase());
+    if (colIndex !== undefined) {
+      const cell = row.getCell(colIndex);
+      // ExcelJS: use .value, ignore formulas (use .result if formula)
+      if (cell.type === ExcelJS.ValueType.Formula) {
+        return cell.result;
       }
-    };
+      return cell.value;
+    }
+  }
+  return undefined;
+};
 
-    reader.onerror = () => {
-      reject(new Error('Failed to read file'));
-    };
-
-    reader.readAsBinaryString(file);
+export const parseExcelFile = async (file: File): Promise<FinancialData[]> => {
+  const arrayBuffer = await file.arrayBuffer();
+  
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(arrayBuffer);
+  
+  const worksheet = workbook.worksheets[0];
+  if (!worksheet) {
+    throw new Error('No worksheets found in file');
+  }
+  
+  // Build header map from first row
+  const headerMap = new Map<string, number>();
+  const headerRow = worksheet.getRow(1);
+  headerRow.eachCell((cell, colNumber) => {
+    const value = String(cell.value ?? '').toLowerCase().trim();
+    if (value) {
+      headerMap.set(value, colNumber);
+    }
   });
+  
+  const totalDataRows = worksheet.rowCount - 1; // exclude header
+  if (totalDataRows <= 0) {
+    throw new Error('No data found in file');
+  }
+  
+  if (totalDataRows > MAX_ROWS) {
+    throw new Error(`File contains too many rows (${totalDataRows}). Maximum ${MAX_ROWS} rows allowed.`);
+  }
+  
+  const parsedData: FinancialData[] = [];
+  
+  // Iterate data rows (starting from row 2)
+  for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
+    const row = worksheet.getRow(rowNumber);
+    
+    // Skip completely empty rows
+    if (row.cellCount === 0) continue;
+    
+    try {
+      const parsedRow: FinancialData = {
+        date: validateDate(getValueByHeader(row, headerMap, 'Date', 'Month')),
+        revenue: validatePositiveNumber(getValueByHeader(row, headerMap, 'Revenue', 'MRR') ?? 0, 'Revenue'),
+        operatingExpenses: validatePositiveNumber(getValueByHeader(row, headerMap, 'Operating Expenses', 'Expenses') ?? 0, 'Operating Expenses'),
+        customerCount: Math.floor(validatePositiveNumber(getValueByHeader(row, headerMap, 'Customer Count', 'Customers') ?? 0, 'Customer Count')),
+        churnRate: validatePercentage(getValueByHeader(row, headerMap, 'Churn Rate', 'Churn') ?? 0, 'Churn Rate'),
+        cashIn: validatePositiveNumber(getValueByHeader(row, headerMap, 'Cash In') ?? 0, 'Cash In'),
+        cashOut: validatePositiveNumber(getValueByHeader(row, headerMap, 'Cash Out') ?? 0, 'Cash Out'),
+        cashBalance: validateNumber(getValueByHeader(row, headerMap, 'Cash Balance') ?? 0, 'Cash Balance'),
+      };
+      
+      parsedData.push(parsedRow);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Row ${rowNumber}: ${errorMessage}`);
+    }
+  }
+  
+  if (parsedData.length === 0) {
+    throw new Error('No valid data found in file');
+  }
+  
+  // Check for required columns
+  if (!parsedData[0].date) {
+    throw new Error('Missing required column: Date or Month');
+  }
+  
+  return parsedData;
 };
 
 export const calculateKPIs = (data: FinancialData[]): KPIMetrics => {
@@ -185,96 +194,68 @@ export const calculateKPIs = (data: FinancialData[]): KPIMetrics => {
   const current = sortedData[sortedData.length - 1];
   const previous = sortedData.length > 1 ? sortedData[sortedData.length - 2] : current;
 
-  // Calculate MRR
   const mrr = current.revenue;
   const mrrChange = previous.revenue ? ((mrr - previous.revenue) / previous.revenue) * 100 : 0;
 
-  // Calculate CAC (simplified: operating expenses / customer count)
   const cac = current.customerCount > 0 ? current.operatingExpenses / current.customerCount : 0;
   const previousCac = previous.customerCount > 0 ? previous.operatingExpenses / previous.customerCount : 0;
   const cacChange = previousCac ? ((cac - previousCac) / previousCac) * 100 : 0;
 
-  // Churn Rate
   const churnRate = current.churnRate;
   const churnChange = previous.churnRate ? ((churnRate - previous.churnRate) / previous.churnRate) * 100 : 0;
 
-  // Burn Rate (Net)
   const burnRate = current.cashOut - current.cashIn;
   const previousBurnRate = previous.cashOut - previous.cashIn;
   const burnRateChange = previousBurnRate ? ((burnRate - previousBurnRate) / previousBurnRate) * 100 : 0;
 
-  // Runway (months)
   const avgBurnRate = sortedData.reduce((sum, d) => sum + (d.cashOut - d.cashIn), 0) / sortedData.length;
   const runwayMonths = avgBurnRate > 0 ? current.cashBalance / avgBurnRate : 999;
-  const runway = runwayMonths * 30; // Convert to days
+  const runway = runwayMonths * 30;
 
-  // LTV/CAC Ratio (simplified)
-  const ltv = current.customerCount > 0 ? (mrr * 12 * 3) / current.customerCount : 0; // Assuming 3-year customer lifetime
+  const ltv = current.customerCount > 0 ? (mrr * 12 * 3) / current.customerCount : 0;
   const ltvCacRatio = cac > 0 ? ltv / cac : 0;
   const previousLtv = previous.customerCount > 0 ? (previous.revenue * 12 * 3) / previous.customerCount : 0;
   const previousLtvCacRatio = previousCac > 0 ? previousLtv / previousCac : 0;
   const ltvCacChange = previousLtvCacRatio ? ((ltvCacRatio - previousLtvCacRatio) / previousLtvCacRatio) * 100 : 0;
 
-  // ARPU
   const arpu = current.customerCount > 0 ? mrr / current.customerCount : 0;
   const previousArpu = previous.customerCount > 0 ? previous.revenue / previous.customerCount : 0;
   const arpuChange = previousArpu ? ((arpu - previousArpu) / previousArpu) * 100 : 0;
 
   return {
-    mrr,
-    mrrChange,
-    cac,
-    cacChange,
-    churnRate,
-    churnChange,
-    burnRate,
-    burnRateChange,
-    runway,
-    runwayMonths,
-    ltvCacRatio,
-    ltvCacChange,
-    arpu,
-    arpuChange,
+    mrr, mrrChange, cac, cacChange, churnRate, churnChange,
+    burnRate, burnRateChange, runway, runwayMonths,
+    ltvCacRatio, ltvCacChange, arpu, arpuChange,
   };
 };
 
-export const generateExcelTemplate = () => {
-  const templateData = [
-    {
-      'Date': '2024-01-01',
-      'Revenue': 50000,
-      'Operating Expenses': 30000,
-      'Customer Count': 100,
-      'Churn Rate': 5,
-      'Cash In': 55000,
-      'Cash Out': 35000,
-      'Cash Balance': 200000,
-    },
-    {
-      'Date': '2024-02-01',
-      'Revenue': 55000,
-      'Operating Expenses': 32000,
-      'Customer Count': 110,
-      'Churn Rate': 4.5,
-      'Cash In': 60000,
-      'Cash Out': 37000,
-      'Cash Balance': 223000,
-    },
-    {
-      'Date': '2024-03-01',
-      'Revenue': 60000,
-      'Operating Expenses': 35000,
-      'Customer Count': 120,
-      'Churn Rate': 4,
-      'Cash In': 65000,
-      'Cash Out': 40000,
-      'Cash Balance': 248000,
-    },
-  ];
-
-  const ws = XLSX.utils.json_to_sheet(templateData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Financial Data');
+export const generateExcelTemplate = async () => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Financial Data');
   
-  XLSX.writeFile(wb, 'FinArrow_Template.xlsx');
+  worksheet.columns = [
+    { header: 'Date', key: 'date', width: 15 },
+    { header: 'Revenue', key: 'revenue', width: 15 },
+    { header: 'Operating Expenses', key: 'operatingExpenses', width: 20 },
+    { header: 'Customer Count', key: 'customerCount', width: 18 },
+    { header: 'Churn Rate', key: 'churnRate', width: 12 },
+    { header: 'Cash In', key: 'cashIn', width: 15 },
+    { header: 'Cash Out', key: 'cashOut', width: 15 },
+    { header: 'Cash Balance', key: 'cashBalance', width: 15 },
+  ];
+  
+  worksheet.addRows([
+    { date: '2024-01-01', revenue: 50000, operatingExpenses: 30000, customerCount: 100, churnRate: 5, cashIn: 55000, cashOut: 35000, cashBalance: 200000 },
+    { date: '2024-02-01', revenue: 55000, operatingExpenses: 32000, customerCount: 110, churnRate: 4.5, cashIn: 60000, cashOut: 37000, cashBalance: 223000 },
+    { date: '2024-03-01', revenue: 60000, operatingExpenses: 35000, customerCount: 120, churnRate: 4, cashIn: 65000, cashOut: 40000, cashBalance: 248000 },
+  ]);
+  
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'FinArrow_Template.xlsx';
+  a.click();
+  URL.revokeObjectURL(url);
 };
