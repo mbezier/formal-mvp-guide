@@ -7,6 +7,7 @@ import { parseExcelFile, generateExcelTemplate, FinancialData } from "@/lib/exce
 import { parseTransactionExcel, generateDDTemplate } from "@/lib/dd-parser";
 import { runDueDiligence } from "@/lib/dd-service";
 import { useToast } from "@/hooks/use-toast";
+import { trackEvent } from "@/lib/analytics";
 
 // File validation constants
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -159,7 +160,7 @@ export default function Upload() {
             <h3 className="font-semibold mb-3">Analysis Mode</h3>
             <div className="grid grid-cols-2 gap-3">
               <button
-                onClick={() => setAnalysisMode('dd')}
+                onClick={() => { setAnalysisMode('dd'); trackEvent('analysis_mode_selected', { mode: 'dd' }); }}
                 className={`p-4 rounded border text-left transition-colors ${
                   analysisMode === 'dd' 
                     ? 'border-foreground bg-foreground/5' 
@@ -172,7 +173,7 @@ export default function Upload() {
                 </p>
               </button>
               <button
-                onClick={() => setAnalysisMode('basic')}
+                onClick={() => { setAnalysisMode('basic'); trackEvent('analysis_mode_selected', { mode: 'basic' }); }}
                 className={`p-4 rounded border text-left transition-colors ${
                   analysisMode === 'basic' 
                     ? 'border-foreground bg-foreground/5' 
