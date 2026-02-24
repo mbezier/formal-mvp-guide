@@ -1,9 +1,50 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+// ===== VALIDATION =====
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const MAX_STRING_LENGTH = 200;
+const MAX_AMOUNT = 1e12;
+
+class ValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}
+
+function validateTransaction(t: any, index: number): { customerId: string; transactionDate: string; amount: number; transactionType: string; startDate: string; endDate: string } {
+  if (!t || typeof t !== 'object') {
+    throw new ValidationError(`Transaction ${index}: invalid format`);
+  }
+
+  const customerId = String(t.customerId ?? '').substring(0, MAX_STRING_LENGTH).trim();
+  if (!customerId) throw new ValidationError(`Transaction ${index}: missing customerId`);
+
+  const transactionDate = String(t.transactionDate ?? '').substring(0, MAX_STRING_LENGTH).trim();
+  if (!DATE_REGEX.test(transactionDate)) throw new ValidationError(`Transaction ${index}: invalid transactionDate format (expected YYYY-MM-DD)`);
+
+  const amount = Number(t.amount);
+  if (!Number.isFinite(amount) || Math.abs(amount) > MAX_AMOUNT) {
+    throw new ValidationError(`Transaction ${index}: invalid amount`);
+  }
+
+  const transactionType = String(t.transactionType ?? '').substring(0, MAX_STRING_LENGTH).trim();
+  if (!transactionType) throw new ValidationError(`Transaction ${index}: missing transactionType`);
+
+  const startDate = String(t.startDate ?? '').substring(0, MAX_STRING_LENGTH).trim();
+  if (!DATE_REGEX.test(startDate)) throw new ValidationError(`Transaction ${index}: invalid startDate format (expected YYYY-MM-DD)`);
+
+  const endDate = String(t.endDate ?? '').substring(0, MAX_STRING_LENGTH).trim();
+  if (!DATE_REGEX.test(endDate)) throw new ValidationError(`Transaction ${index}: invalid endDate format (expected YYYY-MM-DD)`);
+
+  return { customerId, transactionDate, amount, transactionType, startDate, endDate };
+}
 
 // ===== TYPES =====
 interface RawTransaction {
@@ -127,7 +168,6 @@ function normalize(rows: (RawTransaction & { revenueClass: string | null })[]): 
 
 // ===== MODULE 4: Event Reconstruction =====
 function reconstructEvents(rows: ProcessedTransaction[]): ProcessedTransaction[] {
-  // Filter to recurring/bridge only
   const lifecycle = rows
     .filter(r => r.revenueClass === 'Recurring' || r.revenueClass === 'Bridge')
     .sort((a, b) => {
@@ -135,14 +175,12 @@ function reconstructEvents(rows: ProcessedTransaction[]): ProcessedTransaction[]
       return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
     });
 
-  // Build a map of prev_end and gap per transaction hash
   const eventMap = new Map<string, { prevEnd: string | null; gap: number | null; eventType: string }>();
   let prevCustomer = '';
   let prevEndDate: Date | null = null;
 
   for (const row of lifecycle) {
     if (row.customerId !== prevCustomer) {
-      // New customer
       eventMap.set(row.transactionHash, { prevEnd: null, gap: null, eventType: 'New' });
       prevCustomer = row.customerId;
       prevEndDate = new Date(row.endDate);
@@ -172,7 +210,6 @@ function reconstructEvents(rows: ProcessedTransaction[]): ProcessedTransaction[]
     prevEndDate = new Date(row.endDate);
   }
 
-  // Merge back into all rows
   return rows.map(r => {
     const event = eventMap.get(r.transactionHash);
     if (event) {
@@ -199,7 +236,6 @@ function buildMRRLedger(rows: ProcessedTransaction[]): MRRLedgerEntry[] {
 
     if (isNaN(start.getTime()) || isNaN(end.getTime())) continue;
 
-    // Generate months between start and end
     const current = new Date(start.getFullYear(), start.getMonth(), 1);
     const endMonth = new Date(end.getFullYear(), end.getMonth(), 1);
 
@@ -256,21 +292,49 @@ serve(async (req) => {
   }
 
   try {
-    const { transactions } = await req.json() as { transactions: RawTransaction[] };
+    // === Authentication ===
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Authentication required' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
-    if (!transactions || !Array.isArray(transactions) || transactions.length === 0) {
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid authentication' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // === Parse & Validate Input ===
+    const body = await req.json();
+    const rawTransactions = body?.transactions;
+
+    if (!rawTransactions || !Array.isArray(rawTransactions) || rawTransactions.length === 0) {
       return new Response(JSON.stringify({ error: 'No transactions provided' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    if (transactions.length > 10000) {
+    if (rawTransactions.length > 10000) {
       return new Response(JSON.stringify({ error: 'Too many transactions (max 10,000)' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
+
+    // Validate each transaction
+    const transactions: RawTransaction[] = rawTransactions.map((t: any, i: number) => validateTransaction(t, i));
 
     // Module 1: Sanitize & Dedup
     const { cleaned, duplicatesRemoved } = sanitizeAndDedup(transactions);
@@ -303,6 +367,8 @@ serve(async (req) => {
       ? ((latestMonth.totalMRR - prevMonth.totalMRR) / prevMonth.totalMRR) * 100
       : 0;
 
+    const mrrBearingCount = withEvents.filter(r => r.impliedMRR > 0).length;
+
     const result = {
       cleanTransactions: withEvents,
       mrrLedger,
@@ -314,8 +380,8 @@ serve(async (req) => {
         duplicatesRemoved,
         latestMRR: latestMonth?.totalMRR || 0,
         mrrGrowthRate: Math.round(mrrGrowthRate * 100) / 100,
-        avgImpliedMRR: withEvents.length > 0
-          ? Math.round(withEvents.reduce((s, r) => s + r.impliedMRR, 0) / withEvents.filter(r => r.impliedMRR > 0).length * 100) / 100
+        avgImpliedMRR: mrrBearingCount > 0
+          ? Math.round(withEvents.reduce((s, r) => s + r.impliedMRR, 0) / mrrBearingCount * 100) / 100
           : 0,
         revenueBreakdown,
       },
@@ -325,9 +391,18 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    console.error('Due diligence processing error:', error);
+
+    if (error instanceof ValidationError) {
+      return new Response(
+        JSON.stringify({ error: error.message }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    return new Response(
+      JSON.stringify({ error: 'Unable to process transactions. Please verify your data format and try again.' }),
+      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
   }
 });
