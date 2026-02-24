@@ -1,1 +1,4 @@
 project_id = "tognpgdizgphipyrplvd"
+
+[functions.due-diligence]
+verify_jwt = false
