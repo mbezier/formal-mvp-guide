@@ -4,7 +4,7 @@ import { Upload as UploadIcon, Download, CheckCircle2, Sparkles, AlertTriangle, 
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { parseExcelFile, generateExcelTemplate, FinancialData } from "@/lib/excel-utils";
-import { parseTransactionExcel } from "@/lib/dd-parser";
+import { parseTransactionExcel, generateDDTemplate } from "@/lib/dd-parser";
 import { runDueDiligence } from "@/lib/dd-service";
 import { useToast } from "@/hooks/use-toast";
 
@@ -195,15 +195,17 @@ export default function Upload() {
                 <h3 className="font-semibold mb-2">Step 1: Prepare Your Data</h3>
                 <p className="text-sm text-muted-foreground mb-4">
                   {analysisMode === 'dd' 
-                    ? 'Your Excel should have columns: Customer ID, Transaction Date, Amount, Transaction Types, Start date, End date'
+                    ? 'Download our template with the required columns and sample transactions, or use your own file.'
                     : 'Get started with our pre-formatted Excel template with monthly data.'}
                 </p>
-                {analysisMode === 'basic' && (
-                  <Button onClick={() => generateExcelTemplate()} variant="outline" className="border-foreground/20 hover:bg-foreground hover:text-background">
-                    <Download className="h-4 w-4 mr-2" />
-                    Download Template
-                  </Button>
-                )}
+                <Button 
+                  onClick={() => analysisMode === 'dd' ? generateDDTemplate() : generateExcelTemplate()} 
+                  variant="outline" 
+                  className="border-foreground/20 hover:bg-foreground hover:text-background"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download {analysisMode === 'dd' ? 'DD' : ''} Template
+                </Button>
               </div>
             </div>
           </div>

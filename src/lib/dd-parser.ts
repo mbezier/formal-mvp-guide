@@ -87,3 +87,43 @@ export async function parseTransactionExcel(file: File): Promise<RawTransaction[
 
   return transactions;
 }
+
+export async function generateDDTemplate() {
+  const workbook = new ExcelJS.Workbook();
+  const ws = workbook.addWorksheet('Transactions');
+
+  ws.columns = [
+    { header: 'Customer ID', key: 'customerId', width: 15 },
+    { header: 'Transaction Date', key: 'transactionDate', width: 18 },
+    { header: 'Amount', key: 'amount', width: 12 },
+    { header: 'Transaction Types', key: 'transactionTypes', width: 30 },
+    { header: 'Start date', key: 'startDate', width: 15 },
+    { header: 'End date', key: 'endDate', width: 15 },
+  ];
+
+  // Style header row
+  ws.getRow(1).font = { bold: true };
+
+  ws.addRows([
+    { customerId: 'C001', transactionDate: '2024-01-15', amount: 1200, transactionTypes: 'Subscription', startDate: '2024-01-01', endDate: '2024-12-31' },
+    { customerId: 'C001', transactionDate: '2024-02-01', amount: 500, transactionTypes: 'Consulting', startDate: '2024-02-01', endDate: '2024-02-28' },
+    { customerId: 'C002', transactionDate: '2024-03-01', amount: 600, transactionTypes: 'Subscription', startDate: '2024-03-01', endDate: '2024-08-31' },
+    { customerId: 'C002', transactionDate: '2024-04-01', amount: -50, transactionTypes: 'Discount', startDate: '2024-04-01', endDate: '2024-04-30' },
+    { customerId: 'C001', transactionDate: '2025-01-10', amount: 1400, transactionTypes: 'Subscription (Annual)', startDate: '2025-01-01', endDate: '2025-12-31' },
+    { customerId: 'C003', transactionDate: '2024-06-01', amount: 300, transactionTypes: 'Subscription', startDate: '2024-06-01', endDate: '2024-11-30' },
+    { customerId: 'C003', transactionDate: '2025-01-15', amount: 350, transactionTypes: 'Subscription', startDate: '2025-01-01', endDate: '2025-06-30' },
+    { customerId: 'C002', transactionDate: '2024-05-01', amount: 200, transactionTypes: 'Setup Fee', startDate: '2024-05-01', endDate: '2024-05-31' },
+    { customerId: 'C004', transactionDate: '2024-07-01', amount: 900, transactionTypes: 'Subscription', startDate: '2024-07-01', endDate: '2025-06-30' },
+    { customerId: 'C004', transactionDate: '2024-09-01', amount: -100, transactionTypes: 'Refund', startDate: '2024-09-01', endDate: '2024-09-30' },
+    { customerId: 'C004', transactionDate: '2024-10-01', amount: 150, transactionTypes: 'Subscription (Upgrade Pro-Rata)', startDate: '2024-10-01', endDate: '2025-06-30' },
+  ]);
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'FinArrow_DD_Template.xlsx';
+  a.click();
+  URL.revokeObjectURL(url);
+}
