@@ -1,110 +1,106 @@
+@import url('https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@800,700&f[]=satoshi@400,500,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
-    /* Palantir-inspired monochrome design system */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 5%;
+    --background: 40 6% 97%;
+    --foreground: 40 6% 10%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 5%;
+    --card: 40 6% 100%;
+    --card-foreground: 40 6% 10%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 5%;
+    --popover: 40 6% 100%;
+    --popover-foreground: 40 6% 10%;
 
-    --primary: 0 0% 5%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 190 36% 47%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 10%;
+    --secondary: 40 6% 93%;
+    --secondary-foreground: 40 6% 15%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 45%;
+    --muted: 40 4% 92%;
+    --muted-foreground: 40 4% 45%;
 
-    --accent: 0 0% 92%;
-    --accent-foreground: 0 0% 10%;
+    --accent: 40 6% 90%;
+    --accent-foreground: 40 6% 15%;
 
-    --destructive: 0 84% 45%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 98%;
+    --success: 152 60% 42%;
+    --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 98%;
+    --warning: 38 80% 55%;
+    --warning-foreground: 40 6% 10%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 0 0% 20%;
+    --border: 40 6% 88%;
+    --input: 40 6% 88%;
+    --ring: 190 36% 47%;
 
-    --radius: 0.25rem;
+    --radius: 0.5rem;
 
-    /* Neon accent for dark mode */
-    --neon: 142 100% 50%;
-    --neon-foreground: 0 0% 5%;
+    --neon: 152 60% 42%;
+    --neon-foreground: 0 0% 100%;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 0 0% 10%;
-    --sidebar-primary: 0 0% 5%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 0 0% 95%;
-    --sidebar-accent-foreground: 0 0% 10%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 0 0% 20%;
+    --sidebar-background: 40 6% 97%;
+    --sidebar-foreground: 40 6% 15%;
+    --sidebar-primary: 190 36% 47%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 40 6% 93%;
+    --sidebar-accent-foreground: 40 6% 15%;
+    --sidebar-border: 40 6% 88%;
+    --sidebar-ring: 190 36% 47%;
   }
 
   .dark {
-    --background: 0 0% 5%;
-    --foreground: 0 0% 98%;
+    --background: 40 4% 7%;
+    --foreground: 40 10% 87%;
 
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 98%;
+    --card: 40 3% 10%;
+    --card-foreground: 40 10% 87%;
 
-    --popover: 0 0% 5%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 40 3% 10%;
+    --popover-foreground: 40 10% 87%;
 
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 5%;
+    --primary: 190 36% 47%;
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 40 3% 14%;
+    --secondary-foreground: 40 10% 87%;
 
-    --muted: 0 0% 12%;
-    --muted-foreground: 0 0% 60%;
+    --muted: 40 3% 14%;
+    --muted-foreground: 40 4% 55%;
 
-    --accent: 0 0% 15%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 40 3% 17%;
+    --accent-foreground: 40 10% 87%;
 
-    --destructive: 0 84% 45%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --success: 142 71% 45%;
-    --success-foreground: 0 0% 98%;
+    --success: 152 60% 42%;
+    --success-foreground: 0 0% 100%;
 
-    --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 5%;
+    --warning: 38 80% 55%;
+    --warning-foreground: 40 4% 7%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 0 0% 80%;
+    --border: 40 3% 18%;
+    --input: 40 3% 18%;
+    --ring: 190 36% 47%;
 
-    --sidebar-background: 0 0% 8%;
-    --sidebar-foreground: 0 0% 95%;
-    --sidebar-primary: 0 0% 98%;
-    --sidebar-primary-foreground: 0 0% 5%;
-    --sidebar-accent: 0 0% 15%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 0 0% 80%;
+    --sidebar-background: 40 3% 10%;
+    --sidebar-foreground: 40 10% 87%;
+    --sidebar-primary: 190 36% 47%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 40 3% 17%;
+    --sidebar-accent-foreground: 40 10% 87%;
+    --sidebar-border: 40 3% 18%;
+    --sidebar-ring: 190 36% 47%;
 
-    --neon: 142 100% 50%;
-    --neon-foreground: 0 0% 5%;
+    --neon: 152 60% 42%;
+    --neon-foreground: 0 0% 100%;
   }
 }
 
@@ -115,12 +111,22 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-family: 'Satoshi', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-semibold tracking-tight;
+    font-family: 'Cabinet Grotesk', 'Inter', sans-serif;
+    @apply font-extrabold tracking-tight;
+  }
+}
+
+@layer utilities {
+  .font-heading {
+    font-family: 'Cabinet Grotesk', 'Inter', sans-serif;
+  }
+  .font-body {
+    font-family: 'Satoshi', 'Inter', sans-serif;
   }
 }
