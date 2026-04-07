@@ -23,9 +23,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setLoading(false);
+
+      // Clear sensitive data from sessionStorage on sign-out or token expiry
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' && !session) {
+        sessionStorage.removeItem('financialData');
+        sessionStorage.removeItem('ddResult');
+        sessionStorage.removeItem('userUploadedFile');
+        sessionStorage.removeItem('analytics_session_id');
+      }
     });
 
     supabase.auth.getSession().then(({ data: { session } }) => {
