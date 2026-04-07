@@ -1,14 +1,7 @@
-import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 
 export const CTASection = () => {
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) setSubmitted(true);
-  };
+  const mailto = "mailto:your@email.com?subject=FinArrow%20Demo%20Request&body=Hi%2C%0A%0AI%27d%20like%20to%20request%20a%20demo%20of%20FinArrow.%0A%0AMy%20role%3A%20%0AFund%20%2F%20firm%3A%20%0A%0AThanks!";
 
   return (
     <section id="request-demo" className="py-20 md:py-28 bg-accent/20">
@@ -19,33 +12,16 @@ export const CTASection = () => {
             Run your first AI-assisted VDD report this week.
           </h2>
           <p className="text-muted-foreground mb-8 leading-relaxed text-sm">
-            We're onboarding a small group of search funds and PE firms for early access. Apply below and we'll respond within 48 hours.
+            We're onboarding a small group of search funds and PE firms for early access. Tell us about your use case and we'll respond within 48 hours.
           </p>
 
-          {submitted ? (
-            <div className="p-4 rounded-xl border border-border bg-card text-sm">
-              <p className="font-semibold mb-1" style={{ color: "hsl(152 60% 42%)" }}>You're on the list ✓</p>
-              <p className="text-muted-foreground text-xs">We'll reach out to <strong>{email}</strong> within 48 hours.</p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-              <input
-                type="email"
-                required
-                placeholder="you@fund.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="flex-1 h-12 px-5 rounded-full border border-border bg-card text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              />
-              <button
-                type="submit"
-                className="h-12 px-6 rounded-full text-sm font-semibold text-white inline-flex items-center justify-center gap-2 transition-opacity hover:opacity-90"
-                style={{ backgroundColor: "#4f98a3" }}
-              >
-                Get early access <ArrowRight className="h-4 w-4" />
-              </button>
-            </form>
-          )}
+          <a
+            href={mailto}
+            className="inline-flex items-center justify-center gap-2 h-12 px-8 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            style={{ backgroundColor: "#4f98a3" }}
+          >
+            Request Demo <ArrowRight className="h-4 w-4" />
+          </a>
 
           <p className="text-[10px] text-muted-foreground mt-4">
             No credit card. AI runs locally. Your data never leaves your machine.
