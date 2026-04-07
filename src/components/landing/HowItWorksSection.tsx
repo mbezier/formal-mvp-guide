@@ -22,7 +22,7 @@ const steps = [
     icon: Activity,
     title: "Deterministic risk engine",
     desc: "Monte Carlo simulations, cohort analysis, and concentration scoring. No randomness.",
-    tag: "⬡ Deterministic",
+    tag: "⬡ MC simulation · HEC research",
     tagColor: "hsl(38 80% 55%)",
   },
   {

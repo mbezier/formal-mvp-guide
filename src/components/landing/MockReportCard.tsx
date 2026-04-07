@@ -10,7 +10,7 @@ export const MockReportCard = () => {
         <div>
           <p className="text-xs text-muted-foreground font-medium mb-1">FinArrow VDD Report</p>
           <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full" style={{ backgroundColor: 'hsl(152 60% 42% / 0.15)', color: 'hsl(152 60% 42%)' }}>
-            A — 97% Data Quality
+            A — 100% Data Quality
           </span>
         </div>
         <div className="flex items-center gap-1.5 text-xs text-muted-foreground bg-accent px-2.5 py-1.5 rounded-full">
@@ -23,7 +23,7 @@ export const MockReportCard = () => {
       <div className="grid grid-cols-3 gap-3 mb-5">
         {[
           { label: "MRR", value: "€216k", color: "#4f98a3" },
-          { label: "NRR", value: "118%", color: "hsl(152 60% 42%)" },
+          { label: "ARR", value: "€2.6M", color: "hsl(152 60% 42%)" },
           { label: "Top-1", value: "5.8%", color: "hsl(38 80% 55%)" },
         ].map((kpi) => (
           <div key={kpi.label} className="bg-accent/50 rounded-lg p-3 text-center">

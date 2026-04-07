@@ -8,7 +8,7 @@ export const Footer = () => (
         © 2026 FinArrow · AI-native SaaS Due Diligence · Built in France 🇫🇷
       </p>
       <p className="text-xs text-muted-foreground">
-        AI runs locally · GDPR by design
+        Research: HEC Lausanne · AI runs locally · GDPR by design
       </p>
     </div>
   </footer>
