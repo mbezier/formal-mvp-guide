@@ -45,6 +45,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = async () => {
+    // Clear sensitive data before signing out
+    sessionStorage.removeItem('financialData');
+    sessionStorage.removeItem('ddResult');
+    sessionStorage.removeItem('userUploadedFile');
+    sessionStorage.removeItem('analytics_session_id');
     await supabase.auth.signOut();
   };
 
