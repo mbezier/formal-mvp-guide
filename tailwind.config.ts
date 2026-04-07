@@ -71,7 +71,9 @@ export default {
         },
       },
       fontFamily: {
-        sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        sans: ['Satoshi', 'Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
+        heading: ['Cabinet Grotesk', 'Inter', 'sans-serif'],
+        body: ['Satoshi', 'Inter', 'sans-serif'],
       },
       borderRadius: {
         lg: "var(--radius)",
