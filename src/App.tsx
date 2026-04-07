@@ -23,10 +23,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<LandingPage />} />
-            <Route path="/auth" element={<AuthPage />} />
-            <Route path="/analyze" element={<ProtectedRoute><Upload /></ProtectedRoute>} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/dd-dashboard" element={<ProtectedRoute><DDDashboard /></ProtectedRoute>} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
