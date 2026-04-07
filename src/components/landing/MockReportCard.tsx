@@ -23,7 +23,7 @@ export const MockReportCard = () => {
       <div className="grid grid-cols-3 gap-3 mb-5">
         {[
           { label: "MRR", value: "€216k", color: "#4f98a3" },
-          { label: "NRR", value: "118%", color: "hsl(152 60% 42%)" },
+          { label: "ARR", value: "€2.6M", color: "hsl(152 60% 42%)" },
           { label: "Top-1", value: "5.8%", color: "hsl(38 80% 55%)" },
         ].map((kpi) => (
           <div key={kpi.label} className="bg-accent/50 rounded-lg p-3 text-center">

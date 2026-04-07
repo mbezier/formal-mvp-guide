@@ -10,7 +10,7 @@ const flowNodes = [
   { label: "📁 Client billing export / FEC", style: "default" },
   { label: "🔒 Anonymization (local Python)", style: "teal" },
   { label: "✦ AI column mapping (Ollama — on-device)", style: "teal" },
-  { label: "⬡ Deterministic SaaS engine (local)", style: "teal" },
+  { label: "⬡ MC risk engine — HEC Lausanne methodology", style: "teal" },
   { label: "✓ IC Report PDF + data cube", style: "green" },
 ] as const;
 

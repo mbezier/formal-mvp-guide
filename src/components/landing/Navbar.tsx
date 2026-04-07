@@ -16,6 +16,7 @@ export const Navbar = () => {
 
   const links = [
     { label: "How it works", href: "#how-it-works" },
+    { label: "Methodology", href: "#methodology" },
     { label: "Privacy", href: "#privacy" },
     { label: "Metrics", href: "#metrics" },
   ];
